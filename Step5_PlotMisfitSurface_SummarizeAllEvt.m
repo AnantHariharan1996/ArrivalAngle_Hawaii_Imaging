@@ -110,11 +110,26 @@ L1_VaryingLats_BestSection_W = Latstore(L1_VaryingLonLat_Indices_W);
 L1Misfit_VaryingLonLats_W = L1_MisfitSurfaceSummary_stacked(L1_VaryingLonLat_Indices_W);
 % 
 
+L2_VaryingLonLat_Indices_W = find(Widthstore == BestWidth_L2_W & ...
+    Taustore == BestTau_L2_W);
+L2_VaryingLons_BestSection_W = Lonstore(L2_VaryingLonLat_Indices_W);
+L2_VaryingLats_BestSection_W = Latstore(L2_VaryingLonLat_Indices_W);
+L2Misfit_VaryingLonLats_W = L2_MisfitSurfaceSummary_stacked(L2_VaryingLonLat_Indices_W);
+% 
+
+
 
 L1Misfit_VaryingTau_Indices = find(Widthstore == BestWidth_L1 & ...
     Lonstore == BestLon_L1 & Latstore == BestLat_L1);
 L1Misfit_VaryingWidth_Indices = find(Taustore == BestTau_L1 & ...
     Lonstore == BestLon_L1 & Latstore == BestLat_L1);
+
+L1Misfit_VaryingTau_Indices_W = find(Widthstore == BestWidth_L1_W & ...
+    Lonstore == BestLon_L1_W & Latstore == BestLat_L1_W);
+L1Misfit_VaryingWidth_Indices_W = find(Taustore == BestTau_L1_W & ...
+    Lonstore == BestLon_L1_W & Latstore == BestLat_L1_W);
+
+
 
 L2Misfit_VaryingTau_Indices = find(Widthstore == BestWidth_L2 & ...
     Lonstore == BestLon_L2 & Latstore == BestLat_L2);
