@@ -129,23 +129,29 @@ L1Misfit_VaryingTau_Indices_W = find(Widthstore == BestWidth_L1_W & ...
 L1Misfit_VaryingWidth_Indices_W = find(Taustore == BestTau_L1_W & ...
     Lonstore == BestLon_L1_W & Latstore == BestLat_L1_W);
 
-
-
 L2Misfit_VaryingTau_Indices = find(Widthstore == BestWidth_L2 & ...
     Lonstore == BestLon_L2 & Latstore == BestLat_L2);
 L2Misfit_VaryingWidth_Indices = find(Taustore == BestTau_L2 & ...
     Lonstore == BestLon_L2 & Latstore == BestLat_L2);
+
+L2Misfit_VaryingTau_Indices_W = find(Widthstore == BestWidth_L2_W & ...
+    Lonstore == BestLon_L2_W & Latstore == BestLat_L2_W);
+L2Misfit_VaryingWidth_Indices_W = find(Taustore == BestTau_L2_W & ...
+    Lonstore == BestLon_L2_W & Latstore == BestLat_L2_W);
+
 
 L1_VaryingTau_BestSection = Taustore(L1Misfit_VaryingTau_Indices);
 L1Misfit_VaryingTau = L1_MisfitSurfaceSummary_stacked(L1Misfit_VaryingTau_Indices);
 L1_VaryingWidth_BestSection = Widthstore(L1Misfit_VaryingWidth_Indices);
 L1Misfit_VaryingWidth = L1_MisfitSurfaceSummary_stacked(L1Misfit_VaryingWidth_Indices);
 
-
 L2_VaryingTau_BestSection = Taustore(L2Misfit_VaryingTau_Indices);
 L2Misfit_VaryingTau = L2_MisfitSurfaceSummary_stacked(L2Misfit_VaryingTau_Indices);
 L2_VaryingWidth_BestSection = Widthstore(L2Misfit_VaryingWidth_Indices);
 L2Misfit_VaryingWidth = L2_MisfitSurfaceSummary_stacked(L2Misfit_VaryingWidth_Indices);
+
+
+
 
 %% Extract distributions for plotting.
 MinMisfit_L1 = min(L1_MisfitSurfaceSummary_stacked);
@@ -358,9 +364,29 @@ subplot(2,3,4)
 
 subplot(2,3,5)
 
+histogram(TopPercentile_Tau_L1_W,TauBinsforHist)
+hold om
+histogram(TopPercentile_Tau_L2_W,TauBinsforHist)
+title(['Top ' num2str(PrctileThresh) ' Percentile of Models'])
+xlabel('\tau (s)')
+box on
+grid on;
+    set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
+    legend('L1','L2')
+
 subplot(2,3,6)
 
+histogram(TopPercentile_Width_L1_W,WidthBinsforHist)
+hold on
+histogram(TopPercentile_Width_L2_W,WidthBinsforHist)
+title(['Top ' num2str(PrctileThresh) ' Percentile of Models'])
+xlabel('Width (km)')
+box on
+grid on;
+set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
+legend('L1','L2','location','northwest')
 
+saveas(figure(9000+Pcounter),[FigFolder  num2str(Period) 's_StackedMisfitSurfaceWeighted.png'])
 
 end
 
