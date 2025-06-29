@@ -82,8 +82,14 @@ BestWidth_L1_W = Widthstore(mindx_L1_W);
 BestTau_L1_W = Taustore(mindx_L1_W);
 
 
+[minmisL2_W,mindx_L2_W] = min(L2_MisfitSurfaceSummary_stacked_weighted);
+BestLon_L2_W = Lonstore(mindx_L2_W); 
+BestLat_L2_W = Latstore(mindx_L2_W);
+BestWidth_L2_W = Widthstore(mindx_L2_W); 
+BestTau_L2_W = Taustore(mindx_L2_W);
 
-% 
+
+% get transects along lon and lat
 L1_VaryingLonLat_Indices = find(Widthstore == BestWidth_L1 & ...
     Taustore == BestTau_L1);
 L1_VaryingLons_BestSection = Lonstore(L1_VaryingLonLat_Indices);
@@ -96,7 +102,15 @@ L2_VaryingLons_BestSection = Lonstore(L2_VaryingLonLat_Indices);
 L2_VaryingLats_BestSection = Latstore(L2_VaryingLonLat_Indices);
 L2Misfit_VaryingLonLats = L2_MisfitSurfaceSummary_stacked(L2_VaryingLonLat_Indices);
 
+% now get the transects along lon and lat for the weighted models
+L1_VaryingLonLat_Indices_W = find(Widthstore == BestWidth_L1_W & ...
+    Taustore == BestTau_L1_W);
+L1_VaryingLons_BestSection_W = Lonstore(L1_VaryingLonLat_Indices_W);
+L1_VaryingLats_BestSection_W = Latstore(L1_VaryingLonLat_Indices_W);
+L1Misfit_VaryingLonLats_W = L1_MisfitSurfaceSummary_stacked(L1_VaryingLonLat_Indices_W);
 % 
+
+
 L1Misfit_VaryingTau_Indices = find(Widthstore == BestWidth_L1 & ...
     Lonstore == BestLon_L1 & Latstore == BestLat_L1);
 L1Misfit_VaryingWidth_Indices = find(Taustore == BestTau_L1 & ...
