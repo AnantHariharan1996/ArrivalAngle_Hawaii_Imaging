@@ -17,7 +17,7 @@ cglb = phvel;
 spacing=0.25;
 lambda = Period*cglb;
 load coastlines 
-NoiseFac = 10;
+NoiseFac = 5;
 % 
 
 PlotTrueObservations = 1; 
@@ -32,8 +32,8 @@ NewFolder  = [HomeDir 'Raw_ArrivalAngleDeviations/' num2str(Period) 's/'];
 
 % Step 1: Define 'true' diffractor parameters. Make a plot showing this. 
 True_Scatterer_Lon = [-160];
-True_Scatterer_Lat= [18];
-True_Scatterer_Width = [150];
+True_Scatterer_Lat= [20];
+True_Scatterer_Width = [300];
 True_Scatterer_Tau = [12];
 
 
@@ -240,10 +240,12 @@ plot(coastlon,coastlat,'linewidth',3,'color','k')
 barbar=colorbar;
 ylabel(barbar,'Normalized L1 Misfit')
 box on
+plot(coastlon,coastlat,'linewidth',3,'color','k')
+
 set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
 title({'Stacked L1 Misfit Surface: Varying Position',['\tau = ' num2str(BestTau_L1), 's, Width = ' num2str(BestWidth_L1) ' km']})
-       xlim([-163 -154])
-       ylim([17 25])
+       xlim([-165 -154])
+       ylim([17 26])
 Cmap2Use= '/Users/ananthariharan/Documents/GitHub/ArrivalAngle_Hawaii_Imaging/UsefulFunctions/roma.cpt';  
 
  cptcmap(Cmap2Use,'ncol',20);
@@ -291,7 +293,7 @@ legend([p6 p7 p8],'L1 Misfit Slice','L2 Misfit Slice','True \tau')
 % L2Misfit_VaryingWidth
 
 subplot(2,3,5)
-histogram(Best_Fitting_Taus)
+histogram(Best_Fitting_Taus,50)
 hold on
 plot([True_Scatterer_Tau True_Scatterer_Tau],[0 25],'linewidth',3,'LineStyle','--')
 % legend('95th Percentile Best Model Ensemble','True Model')
@@ -303,7 +305,7 @@ xlim([min(Taustore) max(Taustore)])
 subplot(2,3,6)
 
 
-histogram(Best_Fitting_Widths)
+histogram(Best_Fitting_Widths,50)
 hold on
 plot([True_Scatterer_Width True_Scatterer_Width],[0 25],'linewidth',3,'LineStyle','--')
 % legend('95th Percentile Best Model Ensemble','True Model')
@@ -313,13 +315,14 @@ title({'Histogram of Width for','top 1 Percentile Best-Fit Values'})
 subplot(2,3,4)
 plot(coastlon,coastlat,'linewidth',3,'color','k')
 hold on
-scatter(BestLonList,BestLatList,50,NumVals,'filled')
+scatter(BestLonList,BestLatList,150,NumVals,'filled')
 set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
 title({'2D Histogram of Locations for','top 1 Percentile Best-Fit Values'})
-       xlim([-163 -154])
-       ylim([17 25])
+       xlim([-165 -154])
+       ylim([17 26])
     set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
-
+tinybar=colorbar;
+ylabel(tinybar,'N(models)')
 
 
        set(gcf,'position',  [1600 54 1576 789])

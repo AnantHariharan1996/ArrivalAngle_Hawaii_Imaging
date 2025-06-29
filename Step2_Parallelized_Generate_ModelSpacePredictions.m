@@ -11,9 +11,9 @@ Match_Periodlist =[50 66.6667 80 100];
 Match_Event_Search_Limits = [12189 10652 7357 7795];
 
 PCounter = 0;
-Periodlist = [50];
+Periodlist = [80];
 delete(gcp('nocreate'))
-parpool; 
+parpool(6); 
 
 %% Declaring some variables
 MatSuffix = '.mat';
@@ -32,6 +32,7 @@ for Period = Periodlist
     Step2b_SetupParameters
 
 
+    GoodEvtList = load([ '/Users/ananthariharan/Documents/GitHub/ArrivalAngle_Hawaii_Imaging/Stored_ModelSpacePredictions/IDLIST_' num2str(Period) 's.txt']);
 % Loop over Files
      Event_Files=  dir([NewFolder '*_elon_elat_lon_lat_phidev_phigc']);
 
@@ -54,7 +55,8 @@ for Period = Periodlist
         % Set up the grid automatically based on the observations. 
         [Ref_XGrid,Ref_YGrid] = meshgrid(Ref_XGrid,Ref_YGrid);
            % Loop over Model Parameters and store the predictions here. 
-            if CurrID_num <= current_eventlimit
+            EventChecker = ismember(CurrID_num,GoodEvtList);
+            if EventChecker
                 CurrID_num
 %% Step 2c
 

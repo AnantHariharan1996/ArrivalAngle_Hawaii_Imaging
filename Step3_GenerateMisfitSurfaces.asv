@@ -141,8 +141,8 @@ for Period = Periodlist
     MisfitSurfaceSummary.Latstore=Latstore;
     MisfitSurfaceSummary.Widthstore=Widthstore;
     MisfitSurfaceSummary.Taustore=Taustore;
-    MisfitSurfaceSummary.StoreAllMisfits_L1_Weighted=StoreAllMisfits_L1_Weighted;
-    MisfitSurfaceSummary.StoreAllMisfits_L2_Weighted=StoreAllMisfits_L2_Weighted;
+    MisfitSurfaceSummary.StoreAllMisfits_L1=StoreAllMisfits_L1_Weighted;
+    MisfitSurfaceSummary.StoreAllMisfits_L2=StoreAllMisfits_L2_Weighted;
     save([SummaryMisfitDir '/MisfitSurfaces_' num2str(Period) 's.mat'],'MisfitSurfaceSummary') 
 clear MisfitSurfaceSummary
 clear StoreAllMisfits_L1; 

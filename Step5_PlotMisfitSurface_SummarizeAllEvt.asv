@@ -1,4 +1,4 @@
-GGn %% Step 4: Plot Misfit Surfaces
+ %% Step 4: Plot Misfit Surfaces
 % What does this script do?
 % For every period, we stack the misfit for every event.
 % Make plots showing the stacked misfit surfaces
@@ -12,8 +12,12 @@ PredictionsDir =  [HomeDir 'Stored_ModelSpacePredictions/'];
 ObservationsDir = [HomeDir 'Raw_ArrivalAngleDeviations/'];
 SummaryMisfitDir = [PredictionsDir 'SummaryMisfitStore/'];
 FigFolder =  '/Users/ananthariharan/Documents/GitHub/ArrivalAngle_Hawaii_Imaging/Stored_ModelSpacePredictions/SummaryFigures/';
-Periodlist = 66.6667;
+Periodlist = 50;
 Pcounter = 0;
+PrctileThresh = 2;
+addpath(genpath(pwd))
+TauBinsforHist = [0:5:40];
+WidthBinsforHist = [0:50:400];
 for  Period=Periodlist
     Pcounter = Pcounter +1;
     ModelStorageFolder = [PredictionsDir num2str(Period) 's/'];
@@ -24,12 +28,13 @@ for  Period=Periodlist
     load(fname)
 
 Step2b_SetupParameters
-
 % For EVERY event, plot the observations, the 
 % best-fitting model, and best-fitting misfit cross-sections
 % as a function of width position and tau. 
 StoreAllMisfits_L1 = MisfitSurfaceSummary.StoreAllMisfits_L1;
 StoreAllMisfits_L2 = MisfitSurfaceSummary.StoreAllMisfits_L2;
+StoreAllMisfits_L1_Weighted = MisfitSurfaceSummary.StoreAllMisfits_L1_Weighted;
+StoreAllMisfits_L2_Weighted = MisfitSurfaceSummary.StoreAllMisfits_L2_Weighted;
 PhVelList = MisfitSurfaceSummary.PhVelList;
 RMSList = MisfitSurfaceSummary.RMSList;
 
@@ -43,118 +48,29 @@ X_GridForGeogMisfitSurface = [min(Lonstore)-0.5:0.2:max(Lonstore)+0.5];
 Y_GridForGeogMisfitSurface = [min(Latstore)-0.5:0.2:max(Latstore)+0.5];
 [XXGRD,YYGRD] = meshgrid(X_GridForGeogMisfitSurface,Y_GridForGeogMisfitSurface);
 
-for eventnum = 1:length(RMSList)
 
-    disp(['Completed ' num2str(100*eventnum/length(RMSList)) '%'])
-    EVID = EVIDLIST{eventnum}; current_misfit = StoreAllMisfits_L1(:,eventnum);
-    FigureName = [MisfitSurfaceFigs_CurrentPeriod 'EVID_' EVID '_MisfitXSections.png'];
-
-    [minmis,mindx] = min(current_misfit);
-    % get the model params corresponding to this misfit 
-    BestLon = Lonstore(mindx); BestLat = Latstore(mindx);
-    BestWidth = Widthstore(mindx); BestTau = Taustore(mindx);
-     titlestr = {['Event ID ' EVID, ', Best-Fit \tau = ' num2str(BestTau) 's, Best-Fit Width = ' ...
-         num2str(BestWidth) 'km'],['Best-Fit Long/Lat; ' num2str(BestLon) '/' num2str(BestLat) '°' ]};
-
-    % Get the 'surfaces' corresponding to this misfit
-    VaryingLonLat_Indices = find(Widthstore == BestWidth & ...
-        Taustore == BestTau);
-    VaryingLons_BestSection = Lonstore(VaryingLonLat_Indices);
-    VaryingLats_BestSection = Latstore(VaryingLonLat_Indices);
-    L1Misfit_VaryingLonLats= current_misfit(VaryingLonLat_Indices);
-
-
-    VaryingWidth_Indices = find(Lonstore == BestLon & ...
-        Taustore == BestTau & Latstore == BestLat);
-    VaryingWidths_BestSection = Widthstore(VaryingWidth_Indices);
-    L1Misfit_VaryingWidths = current_misfit(VaryingWidth_Indices);
-
-
-    VaryingTau_Indices =  find(Lonstore == BestLon & ...
-        Widthstore == BestWidth & Latstore == BestLat);
-    VaryingTaus_BestSection = Taustore(VaryingTau_Indices);
-    L1Misfit_VaryingTaus = current_misfit(VaryingTau_Indices);
-
-    % Now, load the files corresponding to this event 
-    % and get the model corresponding to the lowest misfit
-    ModelSpaceInfo  = [ ModelStorageFolder...
-    'ModelSpaceSearch_Store_EVID' EVID '.mat'];
-    load(ModelSpaceInfo)    
-    BestFittingModel = Output_Store.ModelSpaceSearch_Store(mindx,:);
-    xgrid = Output_Store.xgrid; 
-    ygrid = Output_Store.ygrid;
-    % Load the observations.    
-    RawObs_Fname = [ObservationsDir_CurrentPeriod EVID num2str(Period) 's_elon_elat_lon_lat_phidev_phigc'];
-    AngObsInfo =  load(RawObs_Fname,'-ascii');
-    Elon = AngObsInfo(1,1); Elat = AngObsInfo(1,2);
-    Obs_Xgrid = AngObsInfo(:,3); Obs_Ygrid = AngObsInfo(:,4); AngleResid = AngObsInfo(:,5);
-     RawStationData_Fname = [ObservationsDir_CurrentPeriod EVID num2str(Period) 's_slon_slat_stt'];
-    RawStnInfo =  load(RawStationData_Fname,'-ascii');  
-    RawSlon = RawStnInfo(:,1);     RawSlat = RawStnInfo(:,2);     RawStt = RawStnInfo(:,3);
-    
-    % Map showing the best-fit plume locations
-    figure(5000+Pcounter)
-       scatter(BestLon, BestLat,250,BestTau,'filled')
-       hold on
-
-
-    figure(8000+Pcounter)
-       scatter(BestLon, BestLat,250,minmis,'filled')
-hold on
-
-end
 zzz(:,1) = MisfitSurfaceSummary.Lonstore;
 zzz(:,2) = MisfitSurfaceSummary.Latstore;
 
-    figure(5000+Pcounter)
-
-box on
-    plot(coastlon,coastlat,'linewidth',2,'color','k')
-    hold on
-barbar=colorbar;
-ylabel(barbar,'timedelay (s)')
 
 [uniquerows,idx] = unique(zzz,'rows');
-       scatter(uniquerows(:,1),uniquerows(:,2),1000,[0 0 1],'s','filled','MarkerFaceAlpha',0.05,'MarkerEdgeAlpha',0.05)
-    set(gca,'linewidth',2,'fontsize',17,'layer','top','fontweight','bold')
-       xlim([-163 -153])
-       ylim([16 26])
 
-       hold on
-colormap(turbo)
-saveas(figure(5000+Pcounter),[FigFolder num2str(Period) 's_alllocssummary_WithTau.png'])
-
-
-
-    figure(8000+Pcounter)
-
-box on
-    plot(coastlon,coastlat,'linewidth',2,'color','k')
-    hold on
-barbar=colorbar;
-ylabel(barbar,'Misfit (deg)')
-
-[uniquerows,idx] = unique(zzz,'rows');
-       scatter(uniquerows(:,1),uniquerows(:,2),1000,[0 0 1],'s','filled','MarkerFaceAlpha',0.05,'MarkerEdgeAlpha',0.05)
-    set(gca,'linewidth',2,'fontsize',17,'layer','top','fontweight','bold')
-       xlim([-163 -153])
-       ylim([16 26])
-
-       hold on
-colormap(turbo)
-saveas(figure(8000+Pcounter),[FigFolder num2str(Period) 's_alllocssummary_withMisfit.png'])
 
 
 % Stack the Misfit. 
-L1_MisfitSurfaceSummary_stacked =sum(StoreAllMisfits_L1');
-L2_MisfitSurfaceSummary_stacked =sum(StoreAllMisfits_L2');
+L1_MisfitSurfaceSummary_stacked =mean(StoreAllMisfits_L1');
+L2_MisfitSurfaceSummary_stacked =mean(StoreAllMisfits_L2');
+
+L1_MisfitSurfaceSummary_stacked_weighted = mean(StoreAllMisfits_L1_Weighted');
+L2_MisfitSurfaceSummary_stacked_weighted= mean(StoreAllMisfits_L2_Weighted');
+
 
 % get cross-sections for plotting
-[minmis,mindx_L1] = min(L1_MisfitSurfaceSummary_stacked);
+[minmisL1,mindx_L1] = min(L1_MisfitSurfaceSummary_stacked);
 BestLon_L1 = Lonstore(mindx_L1); BestLat_L1 = Latstore(mindx_L1);
 BestWidth_L1 = Widthstore(mindx_L1); BestTau_L1 = Taustore(mindx_L1);
 
-[minmis,mindx_L2] = min(L2_MisfitSurfaceSummary_stacked);
+[minmisL2,mindx_L2] = min(L2_MisfitSurfaceSummary_stacked);
 BestLon_L2 = Lonstore(mindx_L2); BestLat_L2 = Latstore(mindx_L2);
 BestWidth_L2 = Widthstore(mindx_L2); BestTau_L2 = Taustore(mindx_L2);
 
@@ -193,38 +109,117 @@ L2Misfit_VaryingTau = L2_MisfitSurfaceSummary_stacked(L2Misfit_VaryingTau_Indice
 L2_VaryingWidth_BestSection = Widthstore(L2Misfit_VaryingWidth_Indices);
 L2Misfit_VaryingWidth = L2_MisfitSurfaceSummary_stacked(L2Misfit_VaryingWidth_Indices);
 
+%% Extract distributions for plotting.
+MinMisfit_L1 = min(L1_MisfitSurfaceSummary_stacked);
+MinMisfit_L2 = min(L2_MisfitSurfaceSummary_stacked);
+MinMisfit_L1_W = min(L1_MisfitSurfaceSummary_stacked_weighted);
+MinMisfit_L2_W= min(L2_MisfitSurfaceSummary_stacked_weighted);
 
+Low_L1_MisfitThreshold = prctile(L1_MisfitSurfaceSummary_stacked,PrctileThresh);
+Low_L2_MisfitThreshold = prctile(L2_MisfitSurfaceSummary_stacked,PrctileThresh);
+Low_L1_MisfitThreshold_W = prctile(L1_MisfitSurfaceSummary_stacked_weighted,PrctileThresh);
+Low_L2_MisfitThreshold_W = prctile(L2_MisfitSurfaceSummary_stacked_weighted,PrctileThresh);
+
+BestFit_idx_L1 = find(L1_MisfitSurfaceSummary_stacked < Low_L1_MisfitThreshold);
+BestFit_idx_L2 = find(L2_MisfitSurfaceSummary_stacked < Low_L2_MisfitThreshold);
+BestFit_idx_L1_W = find(L1_MisfitSurfaceSummary_stacked_weighted < Low_L1_MisfitThreshold_W);
+BestFit_idx_L2_W = find(L2_MisfitSurfaceSummary_stacked_weighted < Low_L2_MisfitThreshold_W);
+
+%% Tau distros
+TopPercentile_Tau_L1 = Taustore(BestFit_idx_L1);
+TopPercentile_Tau_L2 = Taustore(BestFit_idx_L2);
+TopPercentile_Tau_L1_W = Taustore(BestFit_idx_L1_W);
+TopPercentile_Tau_L2_W = Taustore(BestFit_idx_L2_W);
+
+%% Width distros
+TopPercentile_Width_L1 = Widthstore(BestFit_idx_L1);
+TopPercentile_Width_L2 = Widthstore(BestFit_idx_L2);
+TopPercentile_Width_L1_W = Widthstore(BestFit_idx_L1_W);
+TopPercentile_Width_L2_W = Widthstore(BestFit_idx_L2_W);
+
+%% Position distros
+TopPercentile_Lon_L1 = Lonstore(BestFit_idx_L1);
+TopPercentile_Lon_L2 = Lonstore(BestFit_idx_L2);
+TopPercentile_Lon_L1_W = Lonstore(BestFit_idx_L1_W);
+TopPercentile_Lon_L2_W = Lonstore(BestFit_idx_L2_W);
+
+TopPercentile_Lat_L1 = Latstore(BestFit_idx_L1);
+TopPercentile_Lat_L2 = Latstore(BestFit_idx_L2);
+TopPercentile_Lat_L1_W = Latstore(BestFit_idx_L1_W);
+TopPercentile_Lat_L2_W = Latstore(BestFit_idx_L2_W);
+
+L1GoodLocs(:,1) = TopPercentile_Lon_L1;
+L1GoodLocs(:,2) = TopPercentile_Lat_L1;
+
+L2GoodLocs(:,1) = TopPercentile_Lon_L2;
+L2GoodLocs(:,2) = TopPercentile_Lat_L2;
+
+L1GoodLocs_W(:,1) = TopPercentile_Lon_L1_W;
+L1GoodLocs_W(:,2) = TopPercentile_Lat_L1_W;
+
+L2GoodLocs_W(:,1) = TopPercentile_Lon_L2_W;
+L2GoodLocs_W(:,2) = TopPercentile_Lat_L2_W;
+
+[unique_L1,unique_L1dx] = unique(L1GoodLocs,'rows');
+[unique_L2,unique_L2dx] = unique(L2GoodLocs,'rows');
+[unique_L1_W,unique_L1dx_W] = unique(L1GoodLocs_W,'rows');
+[unique_L2_W,unique_L2dx_W] = unique(L2GoodLocs_W,'rows');
+
+% Loop over every unique point and get the number of matches. 
+for uniquelocnum = 1:length(unique_L1(:,1))
+    current_lon = unique_L1(uniquelocnum,1);
+    current_lat = unique_L1(uniquelocnum,2);
+    numvals_L1(uniquelocnum) = length(find( ...
+        TopPercentile_Lon_L1 == current_lon & TopPercentile_Lat_L1 == current_lat));
+end
+
+% Loop over every unique point and get the number of matches. 
+for uniquelocnum = 1:length(unique_L2(:,1))
+    current_lon = unique_L2(uniquelocnum,1);
+    current_lat = unique_L2(uniquelocnum,2);
+    numvals_L2(uniquelocnum) = length(find( ...
+        TopPercentile_Lon_L2 == current_lon & TopPercentile_Lat_L2 == current_lat));
+end
+
+% Loop over every unique point and get the number of matches. 
+for uniquelocnum = 1:length(unique_L1_W(:,1))
+
+    current_lon = unique_L1_W(uniquelocnum,1);
+    current_lat = unique_L1_W(uniquelocnum,2);
+    numvals_L1_W(uniquelocnum) = length(find( ...
+    TopPercentile_Lon_L1_W == current_lon & TopPercentile_Lat_L2_W == current_lat));
+
+end
+
+
+% Loop over every unique point and get the number of matches. 
+for uniquelocnum = 1:length(unique_L2_W(:,1))
+
+    current_lon = unique_L2_W(uniquelocnum,1);
+    current_lat = unique_L2_W(uniquelocnum,2);
+    numvals_L2_W(uniquelocnum) = length(find( ...
+    TopPercentile_Lon_L2_W == current_lon & TopPercentile_Lat_L2_W == current_lat));
+
+end
 
 %% 
 
-L1Gridded = griddata(L1_VaryingLons_BestSection,L1_VaryingLats_BestSection,L1Misfit_VaryingLonLats./max(L1Misfit_VaryingLonLats),XXGRD,YYGRD);
-L2Gridded = griddata(L2_VaryingLons_BestSection,L2_VaryingLats_BestSection,L2Misfit_VaryingLonLats./max(L2Misfit_VaryingLonLats),XXGRD,YYGRD);
+L1Gridded = griddata(L1_VaryingLons_BestSection,L1_VaryingLats_BestSection,L1Misfit_VaryingLonLats,XXGRD,YYGRD);
+L2Gridded = griddata(L2_VaryingLons_BestSection,L2_VaryingLats_BestSection,L2Misfit_VaryingLonLats,XXGRD,YYGRD);
 
+
+
+
+%%% ALL PLOTTING BELOW HERE!
 figure(9000+Pcounter)
-subplot(2,2,1)
-    plot(coastlon,coastlat,'linewidth',2,'color','k')
-    hold on
-contourf(XXGRD,YYGRD,L1Gridded,50,'edgecolor','none')
-barbar=colorbar;
-ylabel(barbar,'Normalized L1 Misfit')
-box on
-set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
-title({'Stacked L1 Misfit Surface: Varying Position',['\tau = ' num2str(BestTau_L1), 's, Width = ' num2str(BestWidth_L1) ' km']})
-       xlim([-163 -154])
-       ylim([17 25])
-plot(coastlon,coastlat,'linewidth',3,'color','k')
-Cmap2Use= '/Users/ananthariharan/Documents/GitHub/ArrivalAngle_Hawaii_Imaging/UsefulFunctions/roma.cpt';  
+subplot(2,3,1)
 
- cptcmap(Cmap2Use,'ncol',20);
-
-
-subplot(2,2,2)
     plot(coastlon,coastlat,'linewidth',2,'color','k')
 hold on
 title({'Stacked L2 Misfit Surface: Varying Position',['\tau = ' num2str(BestTau_L2), 's, Width = ' num2str(BestWidth_L2) ' km']})
 contourf(XXGRD,YYGRD,L2Gridded,50,'edgecolor','none')
 barbar=colorbar;
-ylabel(barbar,'Normalized L2 Misfit')
+ylabel(barbar,'L2 Misfit')
 set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
 box on
 plot(coastlon,coastlat,'linewidth',3,'color','k')
@@ -238,32 +233,75 @@ Cmap2Use= '/Users/ananthariharan/Documents/GitHub/ArrivalAngle_Hawaii_Imaging/Us
 
 
 %% Now plot the misfit surfaces for Tau and for Width
-subplot(2,2,3)
+subplot(2,3,2)
 yyaxis left 
-    plot(L1_VaryingTau_BestSection,L1Misfit_VaryingTau,'linewidth',2)
+    plot(L1_VaryingTau_BestSection,L1Misfit_VaryingTau,'-o','linewidth',2)
     ylabel('L1 Misfit')
 yyaxis right
-    plot(L2_VaryingTau_BestSection,L2Misfit_VaryingTau,'linewidth',2)
+    plot(L2_VaryingTau_BestSection,L2Misfit_VaryingTau,'-o','linewidth',2)
 xlabel('\tau (s)')
     ylabel('L2 Misfit')
     box on
     set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
-
+grid on;
     title('Stacked Misfit Surface: Varying Time Delay')
 
 
-subplot(2,2,4)
+subplot(2,3,3)
 
 yyaxis left 
-    plot(L1_VaryingWidth_BestSection,L1Misfit_VaryingWidth,'linewidth',2)
+    plot(L1_VaryingWidth_BestSection,L1Misfit_VaryingWidth,'-o','linewidth',2)
     ylabel('L1 Misfit')
 yyaxis right
-    plot(L2_VaryingWidth_BestSection,L2Misfit_VaryingWidth,'linewidth',2)
+    plot(L2_VaryingWidth_BestSection,L2Misfit_VaryingWidth,'-o','linewidth',2)
 xlabel('Width (km)')
     ylabel('L2 Misfit')
     box on
+    grid on;
     set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
     title('Stacked Misfit Surfaces: Varying Width')
+    set(figure(9000+Pcounter),'position', [1600 54 1576 789])
+
+
+subplot(2,3,5)
+histogram(TopPercentile_Tau_L1,TauBinsforHist)
+hold on
+histogram(TopPercentile_Tau_L2,TauBinsforHist)
+% histogram(TopPercentile_Tau_L1_W,TauBinsforHist)
+% histogram(TopPercentile_Tau_L1_W,TauBinsforHist)
+title(['Top ' num2str(PrctileThresh) ' Percentile of Models'])
+xlabel('\tau (s)')
+box on
+grid on;
+    set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
+    legend('L1','L2')
+
+subplot(2,3,6)
+histogram(TopPercentile_Width_L1,WidthBinsforHist)
+hold on
+histogram(TopPercentile_Width_L2,WidthBinsforHist)
+% histogram(TopPercentile_Width_L1_W,WidthBinsforHist)
+% histogram(TopPercentile_Width_L1_W,WidthBinsforHist)
+title(['Top ' num2str(PrctileThresh) ' Percentile of Models'])
+xlabel('Width (km)')
+box on
+grid on;
+    set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
+    legend('L1','L2','location','northwest')
+
+    %%% Make the 2D histogram
+ 
+subplot(2,3,4)
+scatter(unique_L2(:,1),unique_L2(:,2),150,numvals_L2,'filled')
+hold on
+plot(coastlon,coastlat,'linewidth',3,'color','k')
+       xlim([-163 -154])
+       ylim([17 25])
+barbar=colorbar;
+box on
+ylabel(barbar,'N')
+    set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
+title(['Top ' num2str(PrctileThresh) ' Percentile of Models: L2'])
 saveas(figure(9000+Pcounter),[FigFolder  num2str(Period) 's_StackedMisfitSurface.png'])
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
