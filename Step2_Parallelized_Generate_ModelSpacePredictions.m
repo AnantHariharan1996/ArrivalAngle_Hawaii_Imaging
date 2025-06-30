@@ -13,7 +13,7 @@ Match_Event_Search_Limits = [12189 10652 7357 7795];
 PCounter = 0;
 Periodlist = [80];
 delete(gcp('nocreate'))
-parpool(6); 
+parpool 
 
 %% Declaring some variables
 MatSuffix = '.mat';

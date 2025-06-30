@@ -145,10 +145,24 @@ L1Misfit_VaryingTau = L1_MisfitSurfaceSummary_stacked(L1Misfit_VaryingTau_Indice
 L1_VaryingWidth_BestSection = Widthstore(L1Misfit_VaryingWidth_Indices);
 L1Misfit_VaryingWidth = L1_MisfitSurfaceSummary_stacked(L1Misfit_VaryingWidth_Indices);
 
+L1_VaryingTau_BestSection_W = Taustore(L1Misfit_VaryingTau_Indices_W);
+L1Misfit_VaryingTau_W = L1_MisfitSurfaceSummary_stacked(L1Misfit_VaryingTau_Indices_W);
+L1_VaryingWidth_BestSection_W = Widthstore(L1Misfit_VaryingWidth_Indices_W);
+L1Misfit_VaryingWidth_W = L1_MisfitSurfaceSummary_stacked(L1Misfit_VaryingWidth_Indices_W);
+
+
+
 L2_VaryingTau_BestSection = Taustore(L2Misfit_VaryingTau_Indices);
 L2Misfit_VaryingTau = L2_MisfitSurfaceSummary_stacked(L2Misfit_VaryingTau_Indices);
 L2_VaryingWidth_BestSection = Widthstore(L2Misfit_VaryingWidth_Indices);
 L2Misfit_VaryingWidth = L2_MisfitSurfaceSummary_stacked(L2Misfit_VaryingWidth_Indices);
+
+
+
+L2_VaryingTau_BestSection_W = Taustore(L2Misfit_VaryingTau_Indices_W);
+L2Misfit_VaryingTau_W = L2_MisfitSurfaceSummary_stacked(L2Misfit_VaryingTau_Indices_W);
+L2_VaryingWidth_BestSection_W = Widthstore(L2Misfit_VaryingWidth_Indices_W);
+L2Misfit_VaryingWidth_W = L2_MisfitSurfaceSummary_stacked(L2Misfit_VaryingWidth_Indices_W);
 
 
 
@@ -248,8 +262,12 @@ end
 
 %% 
 
-L1Gridded = griddata(L1_VaryingLons_BestSection,L1_VaryingLats_BestSection,L1Misfit_VaryingLonLats,XXGRD,YYGRD);
-L2Gridded = griddata(L2_VaryingLons_BestSection,L2_VaryingLats_BestSection,L2Misfit_VaryingLonLats,XXGRD,YYGRD);
+L1Gridded = griddata(L1_VaryingLons_BestSection,L1_VaryingLats_BestSection,...
+    L1Misfit_VaryingLonLats,XXGRD,YYGRD);
+L2Gridded = griddata(L2_VaryingLons_BestSection,L2_VaryingLats_BestSection,...
+    L2Misfit_VaryingLonLats,XXGRD,YYGRD);
+L1Gridded_W = griddata(L1_VaryingLons_BestSection_W,L1_VaryingLats_BestSection_W,L1Misfit_VaryingLonLats_W,XXGRD,YYGRD);
+L2Gridded_W = griddata(L2_VaryingLons_BestSection_W,L2_VaryingLats_BestSection_W,L2Misfit_VaryingLonLats_W,XXGRD,YYGRD);
 
 
 
@@ -304,8 +322,6 @@ xlabel('Width (km)')
     grid on;
     set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
     title('Stacked Misfit Surfaces: Varying Width')
-    set(figure(9000+Pcounter),'position', [1600 54 1576 789])
-
 
 subplot(2,3,5)
 histogram(TopPercentile_Tau_L1,TauBinsforHist)
@@ -346,6 +362,8 @@ box on
 ylabel(barbar,'N')
     set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
 title(['Top ' num2str(PrctileThresh) ' Percentile of Models: L2'])
+    set(figure(9000+Pcounter),'position', [1600 54 1576 789])
+
 saveas(figure(9000+Pcounter),[FigFolder  num2str(Period) 's_StackedMisfitSurface.png'])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
@@ -356,16 +374,65 @@ figure(900+Pcounter)
 
 subplot(2,3,1)
 
+    plot(coastlon,coastlat,'linewidth',2,'color','k')
+hold on
+title({'Stacked L2 Misfit Surface: Varying Position',['\tau = ' num2str(BestTau_L2_W), 's, Width = ' num2str(BestWidth_L2) ' km']})
+contourf(XXGRD,YYGRD,L2Gridded_W,50,'edgecolor','none')
+barbar=colorbar;
+ylabel(barbar,'L2 Misfit')
+set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
+box on
+plot(coastlon,coastlat,'linewidth',3,'color','k')
+       xlim([-163 -154])
+       ylim([17 25])
+Cmap2Use= '/Users/ananthariharan/Documents/GitHub/ArrivalAngle_Hawaii_Imaging/UsefulFunctions/roma.cpt';  
+
+ cptcmap(Cmap2Use,'ncol',20);
+
 subplot(2,3,2)
+yyaxis left 
+    plot(L1_VaryingTau_BestSection_W,L1Misfit_VaryingTau_W,'-o','linewidth',2)
+    ylabel('L1 Misfit')
+yyaxis right
+    plot(L2_VaryingTau_BestSection_W,L2Misfit_VaryingTau_W,'-o','linewidth',2)
+xlabel('\tau (s)')
+    ylabel('L2 Misfit')
+    box on
+    set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
+grid on;
+    title('Stacked Misfit Surface: Varying Time Delay')
+
 
 subplot(2,3,3)
 
+yyaxis left 
+    plot(L1_VaryingWidth_BestSection_W,L1Misfit_VaryingWidth_W,'-o','linewidth',2)
+    ylabel('L1 Misfit')
+yyaxis right
+    plot(L2_VaryingWidth_BestSection_W,L2Misfit_VaryingWidth_W,'-o','linewidth',2)
+xlabel('Width (km)')
+    ylabel('L2 Misfit')
+    box on
+    grid on;
+    set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
+    title('Stacked Misfit Surfaces: Varying Width')
+
+
 subplot(2,3,4)
+ scatter(unique_L2_W(:,1),unique_L2_W(:,2),150,numvals_L2_W,'filled')
+hold on
+plot(coastlon,coastlat,'linewidth',3,'color','k')
+       xlim([-163 -154])
+       ylim([17 25])
+barbar=colorbar;
+box on
+ylabel(barbar,'N')
+    set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
+title(['Top ' num2str(PrctileThresh) ' Percentile of Models: L2'])
 
 subplot(2,3,5)
-
 histogram(TopPercentile_Tau_L1_W,TauBinsforHist)
-hold om
+hold on
 histogram(TopPercentile_Tau_L2_W,TauBinsforHist)
 title(['Top ' num2str(PrctileThresh) ' Percentile of Models'])
 xlabel('\tau (s)')
@@ -385,8 +452,9 @@ box on
 grid on;
 set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
 legend('L1','L2','location','northwest')
+    set(figure(900+Pcounter),'position', [1600 54 1576 789])
 
-saveas(figure(9000+Pcounter),[FigFolder  num2str(Period) 's_StackedMisfitSurfaceWeighted.png'])
+saveas(figure(900+Pcounter),[FigFolder  num2str(Period) 's_StackedMisfitSurfaceHighWeights.png'])
 
 end
 

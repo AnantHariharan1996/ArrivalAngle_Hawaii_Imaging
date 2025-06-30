@@ -49,9 +49,10 @@ for Period = Periodlist
         Elat = AngObsInfo(1,2);
         Obs_Xgrid = AngObsInfo(:,3);
         Obs_Ygrid = AngObsInfo(:,4);
+
+        
         AngleResid = AngObsInfo(:,5);
-        Weight = AngObsInfo(:,8);
-        Geog_Weight = Weight./4;
+        Weight = AngObsInfo(:,8).*10;
         Slon = TTObsInfo(:,1);
         Slat = TTObsInfo(:,2);
         Stt = TTObsInfo(:,3);
