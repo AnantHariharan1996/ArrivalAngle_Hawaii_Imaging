@@ -29,6 +29,7 @@ nrows = ceil(sqrt(numevts));
 ncols =nrows;
 ax = subplot_custom_make(junk2,nrows,ncols,[0.05],[0.05],[0.05 0.95],[0.05 0.95]);
 for eventnum = 1:length(IDList)
+    100*eventnum/length(IDList)
     EVID = num2str(IDList(eventnum));
     % Load the observations.    
     RawObs_Fname = [ObservationsDir_CurrentPeriod EVID num2str(Period) 's_elon_elat_lon_lat_phidev_phigc'];

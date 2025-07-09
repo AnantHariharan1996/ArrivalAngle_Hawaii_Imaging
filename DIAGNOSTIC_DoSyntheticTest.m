@@ -32,9 +32,9 @@ NewFolder  = [HomeDir 'Raw_ArrivalAngleDeviations/' num2str(Period) 's/'];
 
 % Step 1: Define 'true' diffractor parameters. Make a plot showing this. 
 True_Scatterer_Lon = [-160];
-True_Scatterer_Lat= [20];
-True_Scatterer_Width = [300];
-True_Scatterer_Tau = [12];
+True_Scatterer_Lat= [22];
+True_Scatterer_Width = [100];
+True_Scatterer_Tau = [30];
 
 
 Event_Files=  dir([NewFolder '*_elon_elat_lon_lat_phidev_phigc']);
@@ -328,5 +328,5 @@ ylabel(tinybar,'N(models)')
        set(gcf,'position',  [1600 54 1576 789])
 
 sgtitle(['Synthetic Test Results: Diffractor Location' num2str(True_Scatterer_Lon) '/' num2str(True_Scatterer_Lat) ', \tau = ' num2str(True_Scatterer_Tau) 's, Width = ' num2str(True_Scatterer_Width) ' km'],'fontsize',24,'fontweight','bold')
-saveas(figure(9000+Period),[SyntheticTestFolder  num2str(Period) 's_StackedMisfitSurface.png'])
+saveas(figure(9000+Period),[SyntheticTestFolder  num2str(Period) 's_StackedMisfitSurfaceNorthPlumeLoc.png'])
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

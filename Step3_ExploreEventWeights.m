@@ -8,13 +8,47 @@ HomeDir =  '/Users/ananthariharan/Documents/GitHub/ArrivalAngle_Hawaii_Imaging/'
 PredictionsDir =  [HomeDir 'Stored_ModelSpacePredictions/'];
 ObservationsDir = [HomeDir 'Raw_ArrivalAngleDeviations/'];
 SummaryMisfitDir = [PredictionsDir 'SummaryMisfitStore/'];
+EvWeightingFolder = ['/Users/ananthariharan/Documents/GitHub/ArrivalAngle_Hawaii_Imaging/Stored_ModelSpacePredictions/EventWeightingFigs/'];
+addpath(genpath(pwd))
 
-PeriodList  = [50 66.6667 80 100];
+PeriodList  = [50 66.6667 80 100 ];
+CenterLat = 20;
+CenterLon = -155;
 
+%%% Region for Truncation of Measurements
+X_LeftBound = -68.4332; X_RightBound = 137.0968;
+Y_BottomBound = -90; Y_TopBound = 90;
+xv = [X_LeftBound X_LeftBound X_RightBound X_RightBound X_LeftBound];
+yv = [Y_BottomBound Y_TopBound Y_TopBound Y_BottomBound Y_BottomBound];
+
+%%%
+
+Pcounter=0;
 for Period = PeriodList
-
+Pcounter=Pcounter+1;
 GoodIDFname = [PredictionsDir 'IDLIST_' num2str(Period) 's.txt'];
 GoodIDs = load(GoodIDFname);
+
+figure(1000)
+subplot(2,2,Pcounter)
+ax = worldmap('World');
+setm(ax, 'Origin', [0 -180 0])
+load coastlines
+hold on
+ridge=loadjson('ridge.json');
+ridge_info = ridge{2};
+plotm(coastlat,coastlon,'k','LineWidth',2,'color',[0 0 0])
+plotm(ridge_info(:,2),ridge_info(:,1),'k','LineWidth',2,'color',[0.5 0.5 0.5])
+trench=loadjson('trench.json');
+trench_info = trench{2};
+plotm(trench_info(:,2),trench_info(:,1),'k','LineWidth',2,'color',[0.5 0.5 0.5])
+transform=loadjson('transform.json');
+transform_info = transform{2};
+plotm(transform_info(:,2),transform_info(:,1),'k','LineWidth',2,'color',[0.5 0.5 0.5])
+set(gca,'fontsize',14)
+setm(gca,'grid','off')
+setm(gca,'meridianlabel','off')
+setm(gca,'parallellabel','off')
 
     
     for evnum = 1:length(GoodIDs)
@@ -41,11 +75,35 @@ GoodIDs = load(GoodIDFname);
         distkm = deg2km(distance(Elat,Elon,Slat,Slon));
         %%%%%
 
-        % First, make a plot of the locations of the events. 
+        % First, make a plot of the locations of the events.
+              [lattrk,lontrk] = track2(Elat,Elon,CenterLat,CenterLon);
 
-
-
-
+subplot(2,2,Pcounter)
+plotm(lattrk,lontrk,'LineWidth',1,'Color', [0 0 1])
     end
+subplot(2,2,Pcounter)
+scatterm(Elatlist,Elonlist,150,[1 0 0],'filled','pentagram')
+% also plot raypaths
+title(['Period: ' num2str(Period) ' s'],'FontSize',18,'FontWeight','bold')
+
+
+
+      [in,on] = inpolygon(Elonlist,Elatlist,xv,yv)
+scatterm(Elatlist(in),Elonlist(in),1400,[1 0 1],'x','linewidth',4)
+
+clear Elatlist
+clear Elonlist
+
+BAD_EVIDs = GoodIDs(in);
+
+% Write out the list of BQAD events. 
+IDs_fname = [HomeDir 'Stored_ModelSpacePredictions/OutsidePacificBasin_IDLIST_' num2str(Period) 's.txt' ];
+writematrix(BAD_EVIDs,IDs_fname)
+clear BAD_EVIDs
 
 end
+set(gcf,'Position', [1379 -69 1811 917])
+saveas(gcf,[EvWeightingFolder 'EvLocsAllPeriods.png'])
+
+
+

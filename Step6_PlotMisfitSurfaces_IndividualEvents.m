@@ -10,7 +10,7 @@ ObservationsDir = [HomeDir 'Raw_ArrivalAngleDeviations/'];
 SummaryMisfitDir = [PredictionsDir 'SummaryMisfitStore/'];
 FigFolder =  '/Users/ananthariharan/Documents/GitHub/ArrivalAngle_Hawaii_Imaging/Stored_ModelSpacePredictions/SummaryFigures/';
 
-Periodlist = 66.6667;
+Periodlist = [66.6667 80 100];
 
 for  Period=Periodlist
     ModelStorageFolder = [PredictionsDir num2str(Period) 's/'];
@@ -42,8 +42,8 @@ Y_GridForGeogMisfitSurface = [min(Latstore)-0.5:0.2:max(Latstore)+0.5];
 [XXGRD,YYGRD] = meshgrid(X_GridForGeogMisfitSurface,Y_GridForGeogMisfitSurface);
 
 junk2 = figure(149)
-nrows = 8;
-ncols =7;
+nrows = ceil(sqrt(length(EVIDLIST)));
+ncols =nrows;
 ax = subplot_custom_make(junk2,nrows,ncols,[0.05],[0.05],[0.05 0.95],[0.05 0.95]);
 
 for eventnum = 1:length(RMSList)
@@ -141,7 +141,8 @@ ax(eventnum).CLim = [0 10];
 ylabel(barbar,{'Avg. L1 Misfit','(degrees)'}, 'fontsize',18)
 end
 end
-
+sgtitle([num2str(Period) 's'],'fontsize',20,'fontweight','bold')
 saveas(junk2,[FigFolder num2str(Period) '_sAllMisfitSurfaces.png'])
+close all
 end
 

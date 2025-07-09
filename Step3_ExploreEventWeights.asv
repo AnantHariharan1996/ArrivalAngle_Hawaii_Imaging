@@ -1,0 +1,100 @@
+% Step 3 Optional
+
+% Record characteristics of the different events, and explore their use for
+% weighting. 
+
+clear; clc; close all
+HomeDir =  '/Users/ananthariharan/Documents/GitHub/ArrivalAngle_Hawaii_Imaging/';
+PredictionsDir =  [HomeDir 'Stored_ModelSpacePredictions/'];
+ObservationsDir = [HomeDir 'Raw_ArrivalAngleDeviations/'];
+SummaryMisfitDir = [PredictionsDir 'SummaryMisfitStore/'];
+EvWeightingFolder = ['/Users/ananthariharan/Documents/GitHub/ArrivalAngle_Hawaii_Imaging/Stored_ModelSpacePredictions/EventWeightingFigs/'];
+addpath(genpath(pwd))
+
+PeriodList  = [50 ];
+CenterLat = 20;
+CenterLon = -155;
+
+%%% Region for Truncation of Measurements
+X_LeftBound = -68.4332; X_RightBound = 137.0968;
+Y_BottomBound = -90; Y_TopBound = 90;
+%%%
+
+Pcounter=0;
+for Period = PeriodList
+Pcounter=Pcounter+1;
+GoodIDFname = [PredictionsDir 'IDLIST_' num2str(Period) 's.txt'];
+GoodIDs = load(GoodIDFname);
+
+figure(1000)
+subplot(2,2,Pcounter)
+ax = worldmap('World');
+setm(ax, 'Origin', [0 -180 0])
+load coastlines
+hold on
+ridge=loadjson('ridge.json');
+ridge_info = ridge{2};
+plotm(coastlat,coastlon,'k','LineWidth',2,'color',[0 0 0])
+plotm(ridge_info(:,2),ridge_info(:,1),'k','LineWidth',2,'color',[0.5 0.5 0.5])
+trench=loadjson('trench.json');
+trench_info = trench{2};
+plotm(trench_info(:,2),trench_info(:,1),'k','LineWidth',2,'color',[0.5 0.5 0.5])
+transform=loadjson('transform.json');
+transform_info = transform{2};
+plotm(transform_info(:,2),transform_info(:,1),'k','LineWidth',2,'color',[0.5 0.5 0.5])
+set(gca,'fontsize',14)
+setm(gca,'grid','off')
+setm(gca,'meridianlabel','off')
+setm(gca,'parallellabel','off')
+
+    
+    for evnum = 1:length(GoodIDs)
+    
+        EVID = GoodIDs(evnum);
+        AngObsFname = [ObservationsDir num2str(Period) 's/' num2str(EVID)  num2str(Period) 's_elon_elat_lon_lat_phidev_phigc'];
+        TTObsFname = [ObservationsDir num2str(Period) 's/' num2str(EVID)  num2str(Period) 's_slon_slat_stt'];
+
+        AngObsInfo  = load(AngObsFname,'-ascii');
+        TTObsInfo = load(TTObsFname,'-ascii');
+
+        %%%%% Declaring variables
+        Elon = AngObsInfo(1,1);
+        Elat = AngObsInfo(1,2);
+        Obs_Xgrid = AngObsInfo(:,3);
+        Obs_Ygrid = AngObsInfo(:,4);
+        Elonlist(evnum) = Elon; Elatlist(evnum) = Elat;
+        
+        AngleResid = AngObsInfo(:,5);
+        Weight = AngObsInfo(:,8).*10;
+        Slon = TTObsInfo(:,1);
+        Slat = TTObsInfo(:,2);
+        Stt = TTObsInfo(:,3);
+        distkm = deg2km(distance(Elat,Elon,Slat,Slon));
+        %%%%%
+
+        % First, make a plot of the locations of the events.
+              [lattrk,lontrk] = track2(Elat,Elon,CenterLat,CenterLon);
+
+subplot(2,2,Pcounter)
+plotm(lattrk,lontrk,'LineWidth',1,'Color', [0 0 1])
+    end
+subplot(2,2,Pcounter)
+scatterm(Elatlist,Elonlist,250,[1 0 0],'filled','pentagram')
+% also plot raypaths
+title(['Period: ' num2str(Period) ' s'],'FontSize',18,'FontWeight','bold')
+end
+set(gcf,'Position', [1379 -69 1811 917])
+saveas(gcf,[EvWeightingFolder 'EvLocsAllPeriods.png'])
+
+
+figure()
+plot(coastlon,coastlat)
+hold on
+scatter(Elonlist,Elatlist)
+clear S
+S.Vertices = [X_LeftBound Y_BottomBound; X_LeftBound Y_TopBound; X_RightBound Y_TopBound; X_RightBound Y_BottomBound; X_LeftBound Y_BottomBound];
+S.FaceColor = 'flat';
+S.EdgeColor = 'red';
+S.LineWidth = 2;
+patch(S)
+

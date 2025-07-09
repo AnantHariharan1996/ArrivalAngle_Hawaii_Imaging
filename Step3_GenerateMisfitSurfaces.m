@@ -1,13 +1,13 @@
 %% 
 clear; clc; close all;
-
+addpath(genpath(pwd))
 % For every event, generate misfit surface as a function of variables of interest
 HomeDir =  '/Users/ananthariharan/Documents/GitHub/ArrivalAngle_Hawaii_Imaging/';
 PredictionsDir =  [HomeDir 'Stored_ModelSpacePredictions/'];
 ObservationsDir = [HomeDir 'Raw_ArrivalAngleDeviations/'];
 SummaryMisfitDir = [PredictionsDir 'SummaryMisfitStore/'];
 mkdir(SummaryMisfitDir)
-Periodlist =[50] %%% 66.6667 80 100];
+Periodlist =[80] %%% 66.6667 80 100];
 
 Pcounter = 0;
 for Period = Periodlist

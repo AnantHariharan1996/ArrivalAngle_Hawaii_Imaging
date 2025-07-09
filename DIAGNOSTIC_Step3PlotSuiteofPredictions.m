@@ -27,7 +27,7 @@ Fix_Width = UniqueWidths(2);
 Fix_Tau = 10;
 
 %%% 
-junk2  = figure(50)
+junk2  = figure(50);
 ax = subplot_custom_make(junk2,5,5,[0.11],[0.25],[0.1 0.9],[0.1 0.9]);
 
 for modelnum =1:length(ax(:))

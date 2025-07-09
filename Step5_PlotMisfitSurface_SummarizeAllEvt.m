@@ -12,12 +12,13 @@ PredictionsDir =  [HomeDir 'Stored_ModelSpacePredictions/'];
 ObservationsDir = [HomeDir 'Raw_ArrivalAngleDeviations/'];
 SummaryMisfitDir = [PredictionsDir 'SummaryMisfitStore/'];
 FigFolder =  '/Users/ananthariharan/Documents/GitHub/ArrivalAngle_Hawaii_Imaging/Stored_ModelSpacePredictions/SummaryFigures/';
-Periodlist = 50;
+Periodlist = [50 66.6667 80 100];
 Pcounter = 0;
 PrctileThresh = 2;
 addpath(genpath(pwd))
 TauBinsforHist = [0:5:40];
 WidthBinsforHist = [0:50:400];
+Remove_Outside_Evts = true;
 for  Period=Periodlist
     Pcounter = Pcounter +1;
     ModelStorageFolder = [PredictionsDir num2str(Period) 's/'];
@@ -43,6 +44,19 @@ Latstore=  MisfitSurfaceSummary.Latstore;
 Widthstore= MisfitSurfaceSummary.Widthstore;
  Taustore= MisfitSurfaceSummary.Taustore;
 EVIDLIST=    MisfitSurfaceSummary.EVIDLIST;
+OutsideBasinEvtsFname = [PredictionsDir 'OutsidePacificBasin_IDLIST_' num2str(Period) 's.txt'];
+OutsideBasinEvts = load(OutsideBasinEvtsFname);
+
+DX2RemoveList = [];
+for junknum = 1:length(EVIDLIST)
+
+currEVID = EVIDLIST{junknum};
+currEVIDNUM = str2num(currEVID);
+if ismember(currEVIDNUM,OutsideBasinEvts)
+DX2RemoveList = [DX2RemoveList junknum];
+end
+end
+
 
 X_GridForGeogMisfitSurface = [min(Lonstore)-0.5:0.2:max(Lonstore)+0.5];
 Y_GridForGeogMisfitSurface = [min(Latstore)-0.5:0.2:max(Latstore)+0.5];
@@ -55,6 +69,20 @@ zzz(:,2) = MisfitSurfaceSummary.Latstore;
 
 [uniquerows,idx] = unique(zzz,'rows');
 
+
+if Remove_Outside_Evts
+
+StoreAllMisfits_L1(:,DX2RemoveList)  = [];
+StoreAllMisfits_L2(:,DX2RemoveList)  = [];
+StoreAllMisfits_L1_Weighted(:,DX2RemoveList)  = [];
+StoreAllMisfits_L2_Weighted(:,DX2RemoveList)  = [];
+
+OutputSuffix = ['BasinEvts'];
+else
+OutputSuffix = ['AllEvts'];
+
+
+end
 
 
 % Stack the Misfit. 
@@ -364,7 +392,7 @@ ylabel(barbar,'N')
 title(['Top ' num2str(PrctileThresh) ' Percentile of Models: L2'])
     set(figure(9000+Pcounter),'position', [1600 54 1576 789])
 
-saveas(figure(9000+Pcounter),[FigFolder  num2str(Period) 's_StackedMisfitSurface.png'])
+saveas(figure(9000+Pcounter),[FigFolder  num2str(Period) 's_StackedMisfitSurface' OutputSuffix '.png'])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 %%%% Now, repeat the above plot, but this time for the weighted misfit%%%%%
@@ -454,7 +482,11 @@ set(gca,'fontsize',18,'fontweight','bold','linewidth',2)
 legend('L1','L2','location','northwest')
     set(figure(900+Pcounter),'position', [1600 54 1576 789])
 
-saveas(figure(900+Pcounter),[FigFolder  num2str(Period) 's_StackedMisfitSurfaceHighWeights.png'])
+saveas(figure(900+Pcounter),[FigFolder  num2str(Period) 's_StackedMisfitSurfaceHighWeights' OutputSuffix '.png'])
 
+clear numvals_L1
+clear numvals_L1_W
+clear numvals_L2
+clear numvals_L2_W
 end
 
