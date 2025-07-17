@@ -116,6 +116,9 @@ Data2Write(:,8) = AzCoverageWeight(:);
 RawData2Write(:,1) = current_stalon;
 RawData2Write(:,2) =current_stalat;
 RawData2Write(:,3) =current_TTIMES;
+% RawData2Write(:,4) =current_evlon(1)*ones(size(current_TTIMES(:)));
+% RawData2Write(:,5) =current_evlat(1)*ones(size(current_TTIMES(:)));
+
 dlmwrite([NewFolder num2str(curr_evID) num2str(Period) 's' '_elon_elat_lon_lat_phidev_phigc'],Data2Write,'delimiter','\t','precision','%.6f');
 dlmwrite([NewFolder num2str(curr_evID) num2str(Period) 's' '_slon_slat_stt'],RawData2Write,'delimiter','\t','precision','%.6f');
 clear Data2Write
