@@ -8,8 +8,7 @@ load coastlines
 HomeDir =  '/Users/ananthariharan/Documents/GitHub/ArrivalAngle_Hawaii_Imaging/';
 
 Match_Periodlist =[50 66.6667 80 100];
-Match_Event_Search_Limits = [12189 10652 7357 7795];
-
+DiagPlot = 0;
 PCounter = 0;
 Periodlist = [50];
 delete(gcp('nocreate'))
@@ -96,7 +95,7 @@ current_width  = Widthstore(ModelCounter);
 
 
 %% Occasionally, save a figure showing results from the forward model
-if rem(ModelCounter,2000) == 1000
+if rem(ModelCounter,2000) == 1000 & DiagPlot ==1
 
     OutputFigname = [ NewFolder_ModelFigs 'EVID_'...
      CurrID '_' num2str(current_timelag) '_tau_' ...
