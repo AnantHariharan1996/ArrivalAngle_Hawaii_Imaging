@@ -23,7 +23,6 @@ DoNotOverWrite = 0;
 for Period = Periodlist
     
     PCounter = PCounter +1;
-    current_eventlimit = Match_Event_Search_Limits(find(Match_Periodlist== Period));
     NewFolder  = [HomeDir 'Raw_ArrivalAngleDeviations/' num2str(Period) 's/'];
     NewFolder_ModelPredictions  = [HomeDir 'Stored_ModelSpacePredictions/' num2str(Period) 's/'];
     NewFolder_ModelFigs  = [HomeDir 'Stored_ModelSpacePredictions/' num2str(Period) 's_Figs/'];
@@ -52,7 +51,6 @@ for Period = Periodlist
         % Set up the grid automatically based on the observations. 
         [Ref_XGrid,Ref_YGrid] = meshgrid(Ref_XGrid,Ref_YGrid);
            % Loop over Model Parameters and store the predictions here. 
-                CurrID_num
 %% Step 2c
 
 % Grid search over Tau, ScattererLocations, and Width. 
@@ -76,8 +74,9 @@ ModelSpaceSearch_Store = zeros([maxnumvals length(Ref_XGrid(:))]);
     Taustore=Ngrid_Tau;
   
         for ModelCounter = 1:length(Taustore)
+            if rem(ModelCounter,1000) == 0
              [ num2str(Period) 's, Event ' CurrID ': '    num2str(100*ModelCounter/maxnumvals) '% Complete']
-             
+            end
             scattererlon = Lonstore(ModelCounter);
             scattererlat = Latstore(ModelCounter);
 current_timelag = Taustore(ModelCounter);
