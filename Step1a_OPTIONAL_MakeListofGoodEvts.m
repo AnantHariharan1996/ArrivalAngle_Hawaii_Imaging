@@ -24,6 +24,7 @@ for Period = Periodlist
      % Loop over Files
      Event_Files=  dir([NewFolder '*_elon_elat_lon_lat_phidev_phigc']);
     IDCounter = 0;
+    WIDE_IDCounter=0;
      for ijk = 1:1:length(Event_Files) %:-1:1
 
            Current_Event_File = Event_Files(ijk).name;
@@ -66,6 +67,28 @@ for Period = Periodlist
            end
 
 
+           if Period == 50 && CurrID_num  > 12189
+                WIDE_IDCounter = WIDE_IDCounter+1;
+                WIDEIDLIST{WIDE_IDCounter} = num2str(CurrID_num);
+
+           elseif Period == 66.6667  && CurrID_num >  10652
+                WIDE_IDCounter = WIDE_IDCounter+1;
+                WIDEIDLIST{WIDE_IDCounter} = num2str(CurrID_num);
+
+           elseif Period == 80 && (CurrID_num > 7357 || (CurrID_num < 8268 && CurrID_num > 19002))
+                WIDE_IDCounter = WIDE_IDCounter+1;
+                WIDEIDLIST{WIDE_IDCounter} = num2str(CurrID_num);
+
+           elseif Period == 100 && CurrID_num  >  7795
+                WIDE_IDCounter = WIDE_IDCounter+1;
+                WIDEIDLIST{WIDE_IDCounter} = num2str(CurrID_num);
+
+
+           end
+
+
+
+
 
      end
 
@@ -74,4 +97,13 @@ for Period = Periodlist
     IDs_fname = [HomeDir 'Stored_ModelSpacePredictions/IDLIST_' num2str(Period) 's.txt' ];
     writecell(IDLIST',IDs_fname)
 clear IDLIST
+
+
+    % Write out the list of good events. 
+    WIDE_IDs_fname = [HomeDir 'Stored_ModelSpacePredictions/WIDE_IDLIST_' num2str(Period) 's.txt' ];
+    writecell(WIDEIDLIST',WIDE_IDs_fname)
+clear WIDEIDLIST
+
+
+
 end

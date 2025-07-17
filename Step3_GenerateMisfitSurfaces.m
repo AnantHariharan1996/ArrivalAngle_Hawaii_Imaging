@@ -7,7 +7,7 @@ PredictionsDir =  [HomeDir 'Stored_ModelSpacePredictions/'];
 ObservationsDir = [HomeDir 'Raw_ArrivalAngleDeviations/'];
 SummaryMisfitDir = [PredictionsDir 'SummaryMisfitStore/'];
 mkdir(SummaryMisfitDir)
-Periodlist =[80] %%% 66.6667 80 100];
+Periodlist =[50 66.6667 80 100];
 
 Pcounter = 0;
 for Period = Periodlist
@@ -84,7 +84,7 @@ for Period = Periodlist
            
            L1_MisfitStore_Weighted = L2_MisfitStore;
            L2_MisfitStore_Weighted= L2_MisfitStore;
-
+        L2_MisfitStoreNoMean = L1_MisfitStore;
            Var_Reduc_List = L1_MisfitStore;
           for modelspace_num = 1:length(Taustore)
               current_predictions = Output_Store.ModelSpaceSearch_Store(modelspace_num,:);
@@ -96,6 +96,7 @@ for Period = Periodlist
                 Difference = AngleResid-Interped_AA;
                 Mean_L1Misfit = mean(abs(Difference)); % currently unweighted (but still avg) misfit
                 Mean_L2Misfit = mean(abs(Difference.^2)); % currently unweighted (but still avg) misfit
+                L2Misfit = sum(Difference.^2);
                 % Now do weighted calculations
                 AbsDiff = abs(Difference); absDiffsquared = abs(Difference.^2);
                 WmeanL1  = sum(AbsDiff.*Weight)./sum(Weight);
@@ -103,6 +104,8 @@ for Period = Periodlist
 
                 L1_MisfitStore(modelspace_num) = Mean_L1Misfit;
                 L2_MisfitStore(modelspace_num) = Mean_L2Misfit;
+                L2_MisfitStoreNoMean(modelspace_num) = L2Misfit;
+                
                 L1_MisfitStore_Weighted(modelspace_num) = WmeanL1;
                 L2_MisfitStore_Weighted(modelspace_num)= WmeanL2;
           
@@ -116,7 +119,8 @@ for Period = Periodlist
          PhVelList(PredCounter) = gcphvel;
         RMSList(PredCounter) = avgerror;
         EVIDLIST{PredCounter} = EVID;
-       
+        StoreAllMisfits_L2_NOMEAN(:,PredCounter) = L2_MisfitStoreNoMean;
+
          StoreAllMisfits_L1_Weighted(:,PredCounter) = L1_MisfitStore_Weighted;
          StoreAllMisfits_L2_Weighted(:,PredCounter) = L2_MisfitStore_Weighted;
 
@@ -134,6 +138,8 @@ for Period = Periodlist
 
     MisfitSurfaceSummary.StoreAllMisfits_L1=StoreAllMisfits_L1;
     MisfitSurfaceSummary.StoreAllMisfits_L2=StoreAllMisfits_L2;
+    MisfitSurfaceSummary.StoreAllMisfits_L2NoMean=StoreAllMisfits_L2_NOMEAN;
+    
     MisfitSurfaceSummary.PhVelList=PhVelList;
     MisfitSurfaceSummary.RMSList=RMSList;
     MisfitSurfaceSummary.EVIDLIST=EVIDLIST;
@@ -154,5 +160,7 @@ clear EVIDLIST
 clear Var_Reduc_List
 clear StoreAllMisfits_L1_Weighted; 
 clear StoreAllMisfits_L2_Weighted
+clear StoreAllMisfits_L2_NOMEAN
+
 end
 

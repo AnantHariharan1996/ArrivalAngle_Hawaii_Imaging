@@ -7,7 +7,7 @@ PredictionsDir =  [HomeDir 'Stored_ModelSpacePredictions/'];
 ObservationsDir = [HomeDir 'Raw_ArrivalAngleDeviations/'];
 SummaryMisfitDir = [PredictionsDir 'SummaryMisfitStore/'];
 mkdir(SummaryMisfitDir)
-Periodlist =[50 66.6667 80 100];
+Periodlist =[50];
 
 Pcounter = 0;
 for Period = Periodlist
@@ -31,7 +31,7 @@ N_MODELS = length(Output_Store.Lonstore);
     StoreAllVarReduc = zeros(N_MODELS,length(Predictions_List));
     StoreAllMisfits_L1_Weighted = zeros(N_MODELS,length(Predictions_List));
     StoreAllMisfits_L2_Weighted = zeros(N_MODELS,length(Predictions_List));
-
+StoreAllMisfits_L2_NoMean = StoreAllMisfits_L2_Weighted;
     for PredCounter = 1:length(Predictions_List)
         disp(['Loaded  ' num2str(100*PredCounter/length(Predictions_List)) '%'])
         currfname = Predictions_List(PredCounter).name;
@@ -51,7 +51,7 @@ N_MODELS = length(Output_Store.Lonstore);
         AngObsInfo  = load(AngObsFname,'-ascii');
         TTObsInfo = load(TTObs_withAAFname,'-ascii');
 
-        %%%%% Declaring variables
+        %%%%% Declaring variables 
         Elon = AngObsInfo(1,1);
         Elat = AngObsInfo(1,2);
         Obs_Xgrid = AngObsInfo(:,3);
@@ -90,7 +90,7 @@ N_MODELS = length(Output_Store.Lonstore);
            
            L1_MisfitStore = 999999.*ones(size(Taustore)); 
            L2_MisfitStore = L1_MisfitStore;
-           
+           L2_MisfitStore_NoMean = L1_MisfitStore;
            L1_MisfitStore_Weighted = L2_MisfitStore;
            L2_MisfitStore_Weighted= L2_MisfitStore;
 
@@ -110,18 +110,21 @@ N_MODELS = length(Output_Store.Lonstore);
                 Weight = ones(size(AbsDiff)); % FIX THIS ONCE I HAVE SIGMA ON FOSTER AA
                 WmeanL1  = nansum(AbsDiff.*Weight)./sum(Weight);
                 WmeanL2  = nansum(absDiffsquared.*Weight)./sum(Weight);
+                L2Misfit = sum(Difference.^2);
 
                 L1_MisfitStore(modelspace_num) = Mean_L1Misfit;
                 L2_MisfitStore(modelspace_num) = Mean_L2Misfit;
                 L1_MisfitStore_Weighted(modelspace_num) = WmeanL1;
                 L2_MisfitStore_Weighted(modelspace_num)= WmeanL2;
-          
+                L2_MisfitStore_NoMean(modelspace_num)= L2Misfit;
+        
                 % Get Variance Reduction
                 Var_Reduc_List(modelspace_num) =  variance_reduction( FosterAA',Interped_AA');
           end
        
          StoreAllMisfits_L1(:,PredCounter) = L1_MisfitStore;
          StoreAllMisfits_L2(:,PredCounter) = L2_MisfitStore;
+
          StoreAllVarReduc(:,PredCounter) = Var_Reduc_List;
          PhVelList(PredCounter) = gcphvel;
         RMSList(PredCounter) = avgerror;
@@ -130,7 +133,7 @@ N_MODELS = length(Output_Store.Lonstore);
          StoreAllMisfits_L1_Weighted(:,PredCounter) = L1_MisfitStore_Weighted;
          StoreAllMisfits_L2_Weighted(:,PredCounter) = L2_MisfitStore_Weighted;
 
-
+         StoreAllMisfits_L2_NoMean(:,PredCounter) = L2_MisfitStore_NoMean;
 
     end
 
@@ -141,6 +144,7 @@ N_MODELS = length(Output_Store.Lonstore);
         Taustore = Output_Store.Taustore;
 
 
+    MisfitSurfaceSummary.StoreAllMisfits_L2_NoMean=StoreAllMisfits_L2_NoMean;
 
     MisfitSurfaceSummary.StoreAllMisfits_L1=StoreAllMisfits_L1;
     MisfitSurfaceSummary.StoreAllMisfits_L2=StoreAllMisfits_L2;

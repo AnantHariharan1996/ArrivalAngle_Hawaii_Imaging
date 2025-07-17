@@ -26,9 +26,9 @@ UniqueTaus = unique(Output_Store.Taustore);
 
 % Hold Fixed
 Fix_Width = UniqueWidths(2);
-Scatterer_Lon = -160; Scatterer_Lat = 22;
-Scatterer_Tau_LIST = linspace(0,40,9);
-nrows = sqrt(length(Scatterer_Tau_LIST));
+Scatterer_Lon = -158; Scatterer_Lat = 20;
+Scatterer_LON_LIST = linspace(-162,-154,9);
+nrows = sqrt(length(Scatterer_LON_LIST));
 ncols=nrows;
 junk2  = figure(50);
 ax = subplot_custom_make(junk2,nrows,ncols,[0.11],[0.25],[0.1 0.9],[0.1 0.9]);
@@ -37,13 +37,13 @@ ylist = [15:0.25:27];
 [Ref_XGrid,Ref_YGrid] = meshgrid(xlist,ylist);
 EvLon = EVINFO(1,1);
 EvLat = EVINFO(1,2);
+Scatterer_Tau = 10;
 
-for TauNum = 1:length(Scatterer_Tau_LIST)
+for LonNum = 1:length(Scatterer_LON_LIST)
 
-Scatterer_Tau = Scatterer_Tau_LIST(TauNum);
 
 % Generate Predictions
-            scattererlon = Scatterer_Lon;
+            scattererlon = Scatterer_LON_LIST(LonNum);
             scattererlat = Scatterer_Lat;
             current_timelag = Scatterer_Tau
             current_width  = Fix_Width;
@@ -53,26 +53,35 @@ Scatterer_Tau = Scatterer_Tau_LIST(TauNum);
             EvLon, scattererlat,scattererlon,current_timelag,current_width,...
             Ref_YGrid(:),Ref_XGrid(:),cglb,spacing);
         
-scatter(ax(TauNum),xgrid(:),ygrid(:),10,delta(:),'filled')
-title(ax(TauNum),['\tau = ' num2str(Scatterer_Tau) ' s'],'fontsize',20)
+scatter(ax(LonNum),xgrid(:),ygrid(:),20,delta(:),'filled');
+title(ax(LonNum),['Diffractor Long. = ' num2str(scattererlon) ' ^\circ'],'fontsize',14)
 
 
-hold(ax(TauNum),'on')
-plot(ax(TauNum),coastlon,coastlat,'linewidth',2,'color','k')
-ax(TauNum).XLim = [min(xlist) max(xlist) ]
-ax(TauNum).YLim = [min(ylist) max(ylist) ]
-clim(ax(TauNum),[-5 5])
-ax(TauNum).Box = 'on'
-set(ax(TauNum),'linewidth',2)
-ax(TauNum).Layer = 'top'
-viscircles(ax(TauNum),[Scatterer_Lon scattererlat],km2deg(Fix_Width))
-ax(TauNum).YTickLabels = [];
-ax(TauNum).XTickLabels = [];
-pbaspect(ax(TauNum),[1 1 1])
+hold(ax(LonNum),'on')
+plot(ax(LonNum),coastlon,coastlat,'linewidth',2,'color','k')
+ax(LonNum).XLim = [min(xlist) max(xlist) ];
+ax(LonNum).YLim = [min(ylist) max(ylist) ];
+clim(ax(LonNum),[-5 5])
+ax(LonNum).Box = 'on';
+set(ax(LonNum),'linewidth',2)
+ax(LonNum).Layer = 'top';
+viscircles(ax(LonNum),[scattererlon scattererlat],km2deg(Fix_Width),'linewidth',4)
+ax(LonNum).YTickLabels = [];
+ax(LonNum).XTickLabels = [];
+pbaspect(ax(LonNum),[1 1 1])
+
+IntermediatePt = track2(EvLat,EvLon,scattererlat,scattererlon,100);
+IntermediatePts2Use = IntermediatePt(70,:);
+quiver(ax(LonNum),IntermediatePts2Use(2),IntermediatePts2Use(1),scattererlon-(IntermediatePts2Use(2)),scattererlat-IntermediatePts2Use(1),'linewidth',2,'MaxHeadSize',0.4,'color','magenta')
 
 
 end
 set(gcf,'Position',[1865 158 654 621])
+barbar=colorbar(ax(LonNum));
+barbar.Location = 'southoutside';
+barbar.Position = [ 0.125  0.07   0.745 0.0164];
+barbar.FontSize = 14;
+ylabel(barbar,'Arrival Angle Deviation (degrees)','FontWeight','bold')
 colormap(turbo)
-sgtitle('Varying \tau; Colorscale Ranges from -5 to 5 deg.','fontsize',20)
-saveas(gcf,'Benchmarks/VaryingTauExample.png')
+sgtitle('Impact of Varying Diffractor Location on Arrival Angles','fontsize',20)
+saveas(gcf,'Benchmarks/VaryingLocExample.png')

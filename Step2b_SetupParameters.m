@@ -7,8 +7,8 @@ spacing=0.25;
 lambda = Period*cglb;
 
 % Parameter 1: The Position
-XsearchList = [-170:1:-154];
-YsearchList = [16:1:26];
+XsearchList = [-165:1:-150];
+YsearchList = [14:1:26];
 [XSEARCHGRD,YSEARCHGRD] = meshgrid(XsearchList,YsearchList);
 XSEARCHGRD_List=XSEARCHGRD(:); 
 YSEARCHGRD_List = YSEARCHGRD(:);

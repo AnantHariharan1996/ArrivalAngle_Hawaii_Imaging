@@ -1,0 +1,217 @@
+%% 
+clear; clc; close all;
+addpath(genpath(pwd))
+% For every event, generate misfit surface as a function of variables of interest
+HomeDir =  '/Users/ananthariharan/Documents/GitHub/ArrivalAngle_Hawaii_Imaging/';
+PredictionsDir =  [HomeDir 'Stored_ModelSpacePredictions/'];
+ObservationsDir = [HomeDir 'Raw_ArrivalAngleDeviations/'];
+SummaryMisfitDir = [PredictionsDir 'SummaryMisfitStore/'];
+mkdir(SummaryMisfitDir)
+Periodlist =[50];
+load coastlines
+Pcounter = 0;
+EVIDLIST = [12740];
+for Period = Periodlist
+    Pcounter=Pcounter+1;
+
+    % Now find all the .mat files you're interested in
+    FolderName = [PredictionsDir num2str(Period) 's/' ];
+
+    
+
+    Predictions_List = dir([FolderName 'ModelSpaceSearch_Store_EVID*'])
+    PredCounter=1;
+            currfname = Predictions_List(PredCounter).name;
+        full_pred_name = [FolderName currfname];
+        load(full_pred_name)
+    Step2b_SetupParameters
+
+    for evnum = 1:length(EVIDLIST)
+        currevid = EVIDLIST(evnum);
+        full_pred_name = [FolderName 'ModelSpaceSearch_Store_EVID' num2str(currevid) '.mat']
+        load(full_pred_name)
+
+        % For every Model Prediction, get the Event ID and load the
+        % observations. 
+        
+
+        AngObsFname = [ObservationsDir num2str(Period) 's/' num2str(currevid)  num2str(Period) 's_elon_elat_lon_lat_phidev_phigc'];
+        TTObsFname = [ObservationsDir num2str(Period) 's/' num2str(currevid)  num2str(Period) 's_slon_slat_stt'];
+        TTObs_withAAFname = [ObservationsDir num2str(Period) 's/' num2str(currevid)  num2str(Period) 's_slon_slat_stt_phidev'];
+
+        AngObsInfo  = load(AngObsFname,'-ascii');
+        TTObsInfo = load(TTObs_withAAFname,'-ascii');
+
+        %%%%% Declaring variables 
+        Elon = AngObsInfo(1,1);
+        Elat = AngObsInfo(1,2);
+        Obs_Xgrid = AngObsInfo(:,3);
+        Obs_Ygrid = AngObsInfo(:,4);
+
+        
+        AngleResid = AngObsInfo(:,5);
+        Weight = AngObsInfo(:,8).*10;
+        Slon = TTObsInfo(:,1);
+        Slat = TTObsInfo(:,2);
+        Stt = TTObsInfo(:,3);
+        FosterAA = TTObsInfo(:,4);
+     
+        distkm = deg2km(distance(Elat,Elon,Slat,Slon));
+        %%%%%
+
+        % get best-fit phase velocity, assuming gc propagation
+         [p,S] = polyfit(distkm,Stt,1); gcphvel = 1/p(1);
+        % predict ttimes
+        ttpred =polyval(p,distkm);
+        % get tt error
+        errors = abs(ttpred-Stt); avgerror = mean(errors);
+
+         % Now, loop over model predictions and calculate misfit for this
+         % event. 
+          Lonstore = Output_Store.Lonstore;
+          Latstore = Output_Store.Latstore;
+          Widthstore = Output_Store.Widthstore;
+          Taustore = Output_Store.Taustore;
+
+
+
+          
+           xgrid =Output_Store.xgrid;
+           ygrid =Output_Store.ygrid;
+           
+           L1_MisfitStore = 999999.*ones(size(Taustore)); 
+           L2_MisfitStore = L1_MisfitStore;
+           L2_MisfitStore_NoMean = L1_MisfitStore;
+           L1_MisfitStore_Weighted = L2_MisfitStore;
+           L2_MisfitStore_Weighted= L2_MisfitStore;
+
+           Var_Reduc_List = L1_MisfitStore;
+          for modelspace_num = 1:length(Taustore)
+              current_predictions = Output_Store.ModelSpaceSearch_Store(modelspace_num,:);
+
+              %  interpolate the predictions on the observations' locations. 
+
+              Interped_AA = griddata(xgrid,ygrid,current_predictions,Slon,Slat);
+               
+                Difference = FosterAA-Interped_AA;
+                Mean_L1Misfit = nanmean(abs(Difference)); % currently unweighted (but still avg) misfit
+                Mean_L2Misfit = nanmean(abs(Difference.^2)); % currently unweighted (but still avg) misfit
+                % Now do weighted calculations
+                AbsDiff = abs(Difference); absDiffsquared = abs(Difference.^2);
+                Weight = ones(size(AbsDiff)); % FIX THIS ONCE I HAVE SIGMA ON FOSTER AA
+                WmeanL1  = nansum(AbsDiff.*Weight)./sum(Weight);
+                WmeanL2  = nansum(absDiffsquared.*Weight)./sum(Weight);
+                L2Misfit = sum(Difference.^2);
+
+                L1_MisfitStore(modelspace_num) = Mean_L1Misfit;
+                L2_MisfitStore(modelspace_num) = Mean_L2Misfit;
+                L1_MisfitStore_Weighted(modelspace_num) = WmeanL1;
+                L2_MisfitStore_Weighted(modelspace_num)= WmeanL2;
+                L2_MisfitStore_NoMean(modelspace_num)= L2Misfit;
+        
+                % Get Variance Reduction
+                Var_Reduc_List(modelspace_num) =  variance_reduction( FosterAA',Interped_AA');
+          end
+       
+
+         % Get parameters corresponding to minimum misfit. 
+         % Plot Observations, Predictions, and Transects. 
+
+        [minL2misfit,minL2misfitdx] = min(L2_MisfitStore);
+
+        figure(evnum)
+        subplot(2,2,1)
+
+        scatter(Slon,Slat,50,FosterAA,'filled','linewidth',2,'MarkerEdgeColor','k')
+        hold on
+        plot(coastlon,coastlat,'linewidth',2,'color','k')
+        set(gca,'linewidth',2)
+        colormap(turbo)
+        caxis([-5 5])
+        box on
+      xlim([-160 -150])
+    ylim([15 25])
+    barbar=colorbar;
+    ylabel(barbar,'Arrival Angle Deviation (degrees)')
+set(gca,'fontsize',15,'fontweight','bold')
+title('Observations')
+            subplot(2,2,2)
+BestFitPredictions = Output_Store.ModelSpaceSearch_Store(minL2misfitdx,:);
+              Interped_AA = griddata(xgrid,ygrid,BestFitPredictions,Slon,Slat);
+
+
+                   scatter(Slon,Slat,50,Interped_AA,'filled','linewidth',2,'MarkerEdgeColor','k')
+        hold on
+        plot(coastlon,coastlat,'linewidth',2,'color','k')
+        set(gca,'linewidth',2)
+        colormap(turbo)
+        caxis([-5 5])
+        box on
+      xlim([-162 -150])
+    ylim([12 30])
+    barbar=colorbar;
+    ylabel(barbar,'Arrival Angle Deviation (degrees)')
+set(gca,'fontsize',15,'fontweight','bold')
+title('Best-Fitting Predictions')
+
+          % Lonstore = Output_Store.Lonstore;
+          % Latstore = Output_Store.Latstore;
+          % Widthstore = Output_Store.Widthstore;
+          % Taustore = Output_Store.Taustore;
+          % 
+
+BestFittingLon = Lonstore(minL2misfitdx);
+BestFittingLat = Latstore(minL2misfitdx);
+BestFittingTau = Taustore(minL2misfitdx);
+BestFittingWidth = Widthstore(minL2misfitdx);
+LonLatDx = find(Widthstore == BestFittingWidth &  Taustore == BestFittingTau);
+TauDx = find(Lonstore == BestFittingLon &  Latstore == BestFittingLat & Widthstore == BestFittingWidth);
+
+subplot(2,2,3)
+
+scatter(Lonstore(LonLatDx),Latstore(LonLatDx),50,L2_MisfitStore(LonLatDx),'filled')
+
+       hold on
+        plot(coastlon,coastlat,'linewidth',2,'color','k')
+        set(gca,'linewidth',2)
+        colormap(turbo)
+        caxis([0 40])
+        box on
+      xlim([-165.3224 -151.6123])
+
+    ylim([11.9088 27.1987])
+    barbar=colorbar;
+    title('Misfit Surface')
+    ylabel(barbar,'Misfit')
+
+set(gca,'linewidth',2,'fontsize',16,'fontweight','bold')
+set(gca,'fontsize',15,'fontweight','bold')
+
+    subplot(2,2,4)
+plot(Taustore(TauDx),L2_MisfitStore(TauDx),'linewidth',2)
+hold on
+set(gca,'linewidth',2,'fontsize',16,'fontweight','bold')
+xlabel('\tau (s)')
+ylabel('L2 Misfit')
+box on
+set(gca,'fontsize',15,'fontweight','bold')
+
+        %  StoreAllMisfits_L1(:,PredCounter) = L1_MisfitStore;
+        %  StoreAllMisfits_L2(:,PredCounter) = L2_MisfitStore;
+        % 
+        %  StoreAllVarReduc(:,PredCounter) = Var_Reduc_List;
+        %  PhVelList(PredCounter) = gcphvel;
+        % RMSList(PredCounter) = avgerror;
+        % EVIDLIST{PredCounter} = EVID;
+        % 
+        %  StoreAllMisfits_L1_Weighted(:,PredCounter) = L1_MisfitStore_Weighted;
+        %  StoreAllMisfits_L2_Weighted(:,PredCounter) = L2_MisfitStore_Weighted;
+        % 
+        %  StoreAllMisfits_L2_NoMean(:,PredCounter) = L2_MisfitStore_NoMean;
+
+    end
+
+
+
+end
+

@@ -26,7 +26,7 @@ UniqueTaus = unique(Output_Store.Taustore);
 
 % Hold Fixed
 Fix_Width = UniqueWidths(2);
-Scatterer_Lon = -160; Scatterer_Lat = 22;
+Scatterer_Lon = -158; Scatterer_Lat = 20;
 Scatterer_Tau_LIST = linspace(0,40,9);
 nrows = sqrt(length(Scatterer_Tau_LIST));
 ncols=nrows;
@@ -53,7 +53,7 @@ Scatterer_Tau = Scatterer_Tau_LIST(TauNum);
             EvLon, scattererlat,scattererlon,current_timelag,current_width,...
             Ref_YGrid(:),Ref_XGrid(:),cglb,spacing);
         
-scatter(ax(TauNum),xgrid(:),ygrid(:),10,delta(:),'filled')
+scatter(ax(TauNum),xgrid(:),ygrid(:),20,delta(:),'filled')
 title(ax(TauNum),['\tau = ' num2str(Scatterer_Tau) ' s'],'fontsize',20)
 
 
@@ -65,14 +65,25 @@ clim(ax(TauNum),[-5 5])
 ax(TauNum).Box = 'on'
 set(ax(TauNum),'linewidth',2)
 ax(TauNum).Layer = 'top'
-viscircles(ax(TauNum),[Scatterer_Lon scattererlat],km2deg(Fix_Width))
+viscircles(ax(TauNum),[Scatterer_Lon scattererlat],km2deg(Fix_Width),'Linewidth',4)
 ax(TauNum).YTickLabels = [];
 ax(TauNum).XTickLabels = [];
 pbaspect(ax(TauNum),[1 1 1])
 
 
+
+quiver(ax(TauNum),-163,16,scattererlon-(-163),scattererlat-16,'linewidth',2,'MaxHeadSize',2,'color','magenta')
+
+
+
+
 end
 set(gcf,'Position',[1865 158 654 621])
+barbar=colorbar(ax(TauNum));
+barbar.Location = 'southoutside';
+barbar.Position = [ 0.125  0.07   0.745 0.0164];
+barbar.FontSize = 14;
+ylabel(barbar,'Arrival Angle Deviation (degrees)','FontWeight','bold')
 colormap(turbo)
-sgtitle('Varying \tau; Colorscale Ranges from -5 to 5 deg.','fontsize',20)
+sgtitle('Impact of Varying Time Delay \tau on Arrival Angles','fontsize',20)
 saveas(gcf,'Benchmarks/VaryingTauExample.png')

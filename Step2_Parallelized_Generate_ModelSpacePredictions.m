@@ -11,7 +11,7 @@ Match_Periodlist =[50 66.6667 80 100];
 Match_Event_Search_Limits = [12189 10652 7357 7795];
 
 PCounter = 0;
-Periodlist = [80];
+Periodlist = [50];
 delete(gcp('nocreate'))
 parpool 
 

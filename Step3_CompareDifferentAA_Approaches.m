@@ -17,7 +17,7 @@ EvWeightingFolder = ['/Users/ananthariharan/Documents/GitHub/ArrivalAngle_Hawaii
 addpath(genpath(pwd))
 Min_N_Stations = 3;
 L_TOL = 2; % UNITS OF DEGREES DUMBO
-Periodlist = [50 66.6667 80 100];
+Periodlist = [50]  %[50 66.6667 80 100];
 Cmap2Use =     '/Users/ananthariharan/Documents/GitHub/ArrivalAngle_Hawaii_Imaging/UsefulFunctions/roma.cpt';
 load coastlines
 Pcounter=0;
@@ -94,10 +94,36 @@ ax(evnum).CLim = [-5 5];
 colormap(ax(evnum),jet(20))
  cptcmap(Cmap2Use,ax(evnum),'ncol',20);
 
+ %%% PLOT ARROW CORRESPONDING TO RAY AZ
+
+arraymeanlon = mean(Slon); arraymeanlat = mean(Slat);
+[dist2evt,az2evt] = distance(arraymeanlat,arraymeanlon,Elat,Elon);
+
+[lattrk1,lontrk1] = reckon(arraymeanlat,arraymeanlon,2,az2evt);
+[lattrk2,lontrk2] = reckon(arraymeanlat,arraymeanlon,5,az2evt);
+
+quiver(ax(evnum),lontrk2,lattrk2,lontrk1-lontrk2,lattrk1-lattrk2,'linewidth',2,'MaxHeadSize',2,'color','magenta')
 
 TTObsInfo(:,4) = Foster_Angle_Resid;
+
+
+if EVID == 11925 && Period == 50
+figure(99)
+scatter(Slon,Slat,100,Foster_Angle_Resid,'filled','MarkerEdgeColor','k','LineWidth',2)
+hold on
+scatter(Obs_Xgrid,Obs_Ygrid,20,AngleResid,'filled')
+
+disp('pause')
+end
+
+
 dlmwrite(TTObs_WithAAFname,TTObsInfo,'delimiter', '\t','precision','%.6f')
 clear TTObsInfo
+
+
+
+
+
     end
 
     clear Elonlist
@@ -126,6 +152,14 @@ end
 text(ax(eventnum),0.5,0.5,[num2str(Period) ' s'],'fontsize',24,'fontweight','bold')
 
 set(junk2,'position',[1637 -77 1134 956])
-saveas(junk2,[SummaryFigDir 'OurObsFosterOverlain' num2str(Period) 's' '.png'])
- close all
+saveas(junk2,[SummaryFigDir 'WIDE_OurObsFosterOverlain' num2str(Period) 's' '.png'])
+ %close all
+
+
+
+
+
+ %%%% QC
+
+
 end
